@@ -41,5 +41,15 @@ app.post("/submissions", async (req, res) => {
   }
 });
 
+app.get("/submissions", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM submissions ORDER BY id");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 const PORT = process.env.PORT || 3004;
 app.listen(PORT, () => console.log(`API listening on http://localhost:${PORT}`));
