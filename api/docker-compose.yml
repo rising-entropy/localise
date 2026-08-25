@@ -9,6 +9,31 @@ services:
       - "5433:5432"
     volumes:
       - localise_pgdata:/var/lib/postgresql/data
+    networks:
+      - localise-net
+
+  api:
+    build: .
+    ports:
+      - "3004:3004"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: localise
+      DB_USER: localise_user
+      DB_PASSWORD: localise_pass
+      PORT: 3004
+    depends_on:
+      - db
+    networks:
+      - localise-net
+      - vps-infra_npm_network
 
 volumes:
   localise_pgdata:
+
+networks:
+  localise-net:
+    driver: bridge
+  vps-infra_npm_network:
+    external: true
