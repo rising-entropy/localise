@@ -97,6 +97,7 @@ $_SESSION['pagecount'] = $cntr;
     <img src="images/ply.png" alt="play icon"><img src="images/pse.png" alt="pause icon">
   </div>
   <input type="number" value="0" name="degs" id="degs-input" readonly><label>&deg;</label>
+  <input type="hidden" name="page" value="1">
   <div class="centr">
     <input type="submit" value="Submit" name="page">
   </div>
