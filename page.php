@@ -91,15 +91,28 @@ $cntr ++;
 $_SESSION['pagecount'] = $cntr;
 ?>
 
-<form action="page.php" method="post">
+<form action="page.php" method="post" id="degs-form">
   <div class="centr">
     <img src="images/ply.png" alt="play icon"><img src="images/pse.png" alt="pause icon">
   </div>
-  <input type="number" value="0" name="degs" readonly><label>&deg;</label>
+  <input type="number" value="0" name="degs" id="degs-input" readonly><label>&deg;</label>
   <div class="centr">
     <input type="submit" value="Submit" name="page">
   </div>
 </form>
+<script>
+document.getElementById('degs-form').addEventListener('submit', function(e) {
+  var degrees = document.getElementById('degs-input').value;
+  var audioFile = <?php echo json_encode((string)$pageary[$cntr-1]); ?>;
+  fetch('http://localhost:3001/submissions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ audio_file: audioFile, degrees: Number(degrees) })
+  }).catch(function(err) {
+    console.error('API call failed:', err);
+  });
+});
+</script>
 </main>
 </body>
 </html>
