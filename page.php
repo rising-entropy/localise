@@ -88,6 +88,8 @@ echo '<!doctype html>
 ';
 
 $currentAudio = (string)$pageary[$cntr];
+$isFirstPage = ($cntr == 0);
+$isLastPage = ($cntr == (int)$numpages - 1);
 $cntr ++;
 $_SESSION['pagecount'] = $cntr;
 ?>
@@ -103,21 +105,49 @@ $_SESSION['pagecount'] = $cntr;
   </div>
 </form>
 <script>
+var RESPONSES_KEY = 'localiseResponses';
+var UUID_KEY = 'localiseSubmitterUuid';
+
+if (<?php echo $isFirstPage ? 'true' : 'false'; ?>) {
+  localStorage.setItem(RESPONSES_KEY, JSON.stringify([]));
+  localStorage.setItem(UUID_KEY, crypto.randomUUID());
+}
+
 document.getElementById('degs-form').addEventListener('submit', function(e) {
   e.preventDefault();
   var form = e.target;
   var degrees = document.getElementById('degs-input').value;
   var audioFile = <?php echo json_encode($currentAudio); ?>;
-  fetch('https://kanishk-test-api.devangk.dev/submissions', {
+  var isLastPage = <?php echo $isLastPage ? 'true' : 'false'; ?>;
+
+  var responses = JSON.parse(localStorage.getItem(RESPONSES_KEY) || '[]');
+  responses.push({ audio_file: audioFile, degrees: Number(degrees) });
+  localStorage.setItem(RESPONSES_KEY, JSON.stringify(responses));
+
+  if (!isLastPage) {
+    form.submit();
+    return;
+  }
+
+  var submitterUuid = localStorage.getItem(UUID_KEY);
+  var submittedAtEpoch = performance.timeOrigin + performance.now();
+
+  fetch('https://kanishk-test-api.devangk.dev/submissions/bulk', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ audio_file: audioFile, degrees: Number(degrees) })
+    body: JSON.stringify({
+      submitter_uuid: submitterUuid,
+      submitted_at_epoch: submittedAtEpoch,
+      responses: responses
+    })
   }).then(function(res) {
     if (!res.ok) {
       return res.json().then(function(data) {
         alert('Submission error: ' + (data.error || res.status));
       });
     }
+    localStorage.removeItem(RESPONSES_KEY);
+    localStorage.removeItem(UUID_KEY);
     form.submit();
   }).catch(function(err) {
     alert('Network error: ' + err.message);
