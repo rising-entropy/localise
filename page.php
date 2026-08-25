@@ -102,6 +102,8 @@ $_SESSION['pagecount'] = $cntr;
 </form>
 <script>
 document.getElementById('degs-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var form = e.target;
   var degrees = document.getElementById('degs-input').value;
   var audioFile = <?php echo json_encode((string)$pageary[$cntr-1]); ?>;
   fetch('https://kanishk-test-api.devangk.dev/submissions', {
@@ -110,6 +112,8 @@ document.getElementById('degs-form').addEventListener('submit', function(e) {
     body: JSON.stringify({ audio_file: audioFile, degrees: Number(degrees) })
   }).catch(function(err) {
     console.error('API call failed:', err);
+  }).finally(function() {
+    form.submit();
   });
 });
 </script>
