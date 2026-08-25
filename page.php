@@ -108,9 +108,24 @@ $_SESSION['pagecount'] = $cntr;
 var RESPONSES_KEY = 'localiseResponses';
 var UUID_KEY = 'localiseSubmitterUuid';
 
+function generateUuid() {
+  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+    try {
+      return window.crypto.randomUUID();
+    } catch (e) {
+      // crypto.randomUUID requires a secure context (HTTPS/localhost); fall through
+    }
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0;
+    var v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 if (<?php echo $isFirstPage ? 'true' : 'false'; ?>) {
   localStorage.setItem(RESPONSES_KEY, JSON.stringify([]));
-  localStorage.setItem(UUID_KEY, crypto.randomUUID());
+  localStorage.setItem(UUID_KEY, generateUuid());
 }
 
 document.getElementById('degs-form').addEventListener('submit', function(e) {
@@ -129,7 +144,7 @@ document.getElementById('degs-form').addEventListener('submit', function(e) {
     return;
   }
 
-  var submitterUuid = localStorage.getItem(UUID_KEY);
+  var submitterUuid = localStorage.getItem(UUID_KEY) || generateUuid();
   var submittedAtEpoch = performance.timeOrigin + performance.now();
 
   fetch('https://kanishk-test-api.devangk.dev/submissions/bulk', {
